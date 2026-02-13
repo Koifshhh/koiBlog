@@ -27,8 +27,14 @@ function renderPost(p) {
   const title = esc(p.title ?? "(untitled)");
   const caption = esc(p.caption ?? "");
 
-  const spotify = p.spotify ? `<a href="${esc(p.spotify)}" target="_blank" rel="noreferrer">Listen on Spotify</a>` : "";
-  const apple = p.apple ? `<a href="${esc(p.apple)}" target="_blank" rel="noreferrer">Listen on Apple Music</a>` : "";
+  const spotify = p.spotify
+    ? `<a href="${esc(p.spotify)}" target="_blank" rel="noreferrer">Listen on Spotify</a>`
+    : "";
+
+  const apple = p.apple
+    ? `<a href="${esc(p.apple)}" target="_blank" rel="noreferrer">Listen on Apple Music</a>`
+    : "";
+
   const divider = (p.spotify && p.apple) ? `<span class="divider">•</span>` : "";
 
   const listen = (p.spotify || p.apple)
