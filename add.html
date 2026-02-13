@@ -6,52 +6,37 @@
   <title>KOIFSH — Add Post</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* small additions just for the form */
-    .card{
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:18px;
-      background:rgba(255,255,255,.01);
-    }
-    label{display:block; color:var(--muted); font-size:13px; margin:12px 0 6px;}
-    input, textarea{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px 12px;
-      background:transparent;
-      color:var(--fg);
-      font:16px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    .card{border:1px solid var(--line);border-radius:16px;padding:18px;background:rgba(255,255,255,.01);}
+    label{display:block;color:var(--muted);font-size:13px;margin:12px 0 6px;}
+    input,textarea{
+      width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;
+      background:transparent;color:var(--fg);
+      font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       outline:none;
     }
-    textarea{min-height:160px; resize:vertical; white-space:pre-wrap;}
-    .row{display:grid; grid-template-columns:1fr; gap:12px;}
-    @media (min-width:720px){ .row{grid-template-columns:1fr 1fr;} }
-    .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
+    textarea{min-height:160px;resize:vertical;white-space:pre-wrap;}
+    .row{display:grid;grid-template-columns:1fr;gap:12px;}
+    @media (min-width:720px){.row{grid-template-columns:1fr 1fr;}}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
     button{
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:10px 14px;
-      background:transparent;
-      color:var(--fg);
-      cursor:pointer;
-      font:14px/1.2 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      border:1px solid var(--line);border-radius:999px;padding:10px 14px;background:transparent;
+      color:var(--fg);cursor:pointer;
+      font:14px/1.2 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     }
     button:hover{background:rgba(255,255,255,.03);}
+    button[disabled]{opacity:.5;cursor:not-allowed}
     .out{
-      margin-top:14px;
-      padding:14px;
-      border:1px solid var(--line);
-      border-radius:14px;
+      margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:14px;
       background:rgba(255,255,255,.01);
-      font:13px/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      white-space:pre-wrap;
-      word-break:break-word;
+      font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      white-space:pre-wrap;word-break:break-word;
     }
-    .hint{color:var(--muted); font-size:12px; margin-top:10px}
-    .topbar{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap;}
-    .topbar a{color:var(--muted); border-bottom:1px solid transparent;}
-    .topbar a:hover{color:var(--fg); border-bottom-color:var(--fg);}
+    .hint{color:var(--muted);font-size:12px;margin-top:10px}
+    .topbar{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;}
+    .topbar a{color:var(--muted);border-bottom:1px solid transparent;}
+    .topbar a:hover{color:var(--fg);border-bottom-color:var(--fg);}
+    .status{color:var(--muted);font-size:12px}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
   </style>
 </head>
 <body>
@@ -62,9 +47,17 @@
         <a href="index.html">← Back to Archive</a>
       </div>
     </div>
-    <p class="sub">Fill it out → click <strong>Generate</strong> → click <strong>Copy</strong> → paste into <code>posts.json</code>.</p>
+
+    <p class="sub">
+      Click <strong>Fetch latest from Instagram</strong> to auto-fill from your newest post, then Generate → Copy → paste into <code>posts.json</code>.
+    </p>
 
     <div class="card">
+      <div class="btns" style="margin-top:0">
+        <button id="fetch">Fetch latest from Instagram</button>
+        <span id="fetchStatus" class="status"></span>
+      </div>
+
       <div class="row">
         <div>
           <label for="n">Number</label>
@@ -97,7 +90,7 @@
       </div>
 
       <div class="hint">
-        Tip: The form autosaves locally in your browser. If you refresh, your draft stays.
+        Autosaves locally. Tip: put the number + title in your IG caption like <code>12. Never forget</code> (first line) so this can parse it perfectly.
       </div>
 
       <pre class="out" id="out">JSON will appear here.</pre>
@@ -106,7 +99,6 @@
 
 <script>
   const $ = (id) => document.getElementById(id);
-
   const fields = ["n","title","caption","spotify","apple"];
 
   // load draft
@@ -124,11 +116,7 @@
     });
   });
 
-  function cleanUrl(u){
-    u = (u || "").trim();
-    return u;
-  }
-
+  function cleanUrl(u){ return (u || "").trim(); }
   function toInt(s){
     const n = parseInt(String(s).trim(), 10);
     return Number.isFinite(n) ? n : null;
@@ -141,26 +129,14 @@
     const spotify = cleanUrl($("spotify").value);
     const apple = cleanUrl($("apple").value);
 
-    if(!n || !title){
-      return { error: "Add at least a Number and Song title." };
-    }
+    if(!n || !title) return { error: "Add at least a Number and Song title." };
 
-    const obj = {
-      n,
-      title,
-      caption,
-      spotify,
-      apple
-    };
-
-    // remove empty optional fields so your JSON stays clean
+    const obj = { n, title, caption, spotify, apple };
     if(!obj.caption) delete obj.caption;
     if(!obj.spotify) delete obj.spotify;
     if(!obj.apple) delete obj.apple;
 
-    // Pretty-printed object (NOT wrapped in an array)
-    const json = JSON.stringify(obj, null, 2);
-    return { json };
+    return { json: JSON.stringify(obj, null, 2) };
   }
 
   $("gen").addEventListener("click", (e) => {
@@ -171,7 +147,7 @@
       $("copy").disabled = true;
       return;
     }
-    $("out").textContent = json + ","; // comma so you can paste into posts.json array
+    $("out").textContent = json + ",";
     $("copy").disabled = false;
   });
 
@@ -190,6 +166,37 @@
     localStorage.removeItem("koifsh_archive_draft");
     $("out").textContent = "JSON will appear here.";
     $("copy").disabled = true;
+    $("fetchStatus").textContent = "";
+  });
+
+  // Fetch latest from IG via Netlify Function
+  $("fetch").addEventListener("click", async () => {
+    $("fetch").disabled = true;
+    $("fetchStatus").textContent = "Fetching…";
+    try{
+      const res = await fetch("/.netlify/functions/fetch-latest-ig", { cache: "no-store" });
+      if(!res.ok) throw new Error("Fetch failed");
+      const data = await res.json();
+
+      $("caption").value = data.caption || "";
+
+      if(data.parsed && data.parsed.n) $("n").value = data.parsed.n;
+      if(data.parsed && data.parsed.title) $("title").value = data.parsed.title;
+
+      if(data.detected && data.detected.spotify) $("spotify").value = data.detected.spotify;
+      if(data.detected && data.detected.apple) $("apple").value = data.detected.apple;
+
+      // save draft
+      const draft = {};
+      fields.forEach(x => draft[x] = $(x).value);
+      localStorage.setItem("koifsh_archive_draft", JSON.stringify(draft));
+
+      $("fetchStatus").textContent = "Loaded latest IG caption.";
+    }catch(e){
+      $("fetchStatus").textContent = "Couldn’t fetch. Check Netlify function + IG token.";
+    }finally{
+      $("fetch").disabled = false;
+    }
   });
 </script>
 </body>
