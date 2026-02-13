@@ -1,39 +1,25 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>KOIFSH — Archive</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
   <div class="wrap">
+    <header class="header">
+      <h1>KOIFSH — Archive</h1>
+      <p class="sub">Journal entries + songs. 1–50.</p>
+      <p class="sub"><a href="add.html">+ Add Post</a></p>
+    </header>
 
-    <h1>KOIFSH — Archive</h1>
-    <div class="sub">Journal entries + songs. 1–50.</div>
-
-    <!-- POST -->
-    <div class="post">
-      <div>
-        <span class="num">01.</span>
-        <span class="title">Everything Happens to Me</span>
-      </div>
-
-      <div class="caption">
-This weather is illegal.
-Armored Core is sick.
-I haven’t heard any Christmas music.
-      </div>
-
-      <div class="listen">
-        <a href="https://open.spotify.com/" target="_blank" rel="noreferrer">Listen on Spotify</a>
-        <span class="divider">•</span>
-        <a href="https://music.apple.com/" target="_blank" rel="noreferrer">Listen on Apple Music</a>
-      </div>
-    </div>
-    <!-- /POST -->
-
+    <main id="postList" class="list">
+      <p class="muted">Loading…</p>
+    </main>
   </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
