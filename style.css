@@ -1,67 +1,94 @@
+:root{
+  --bg:#0b0b0c;
+  --fg:#e9e9ea;
+  --muted:#9a9aa0;
+  --line:#232326;
+}
 
 body{
-    margin:0;
-    background:#0b0b0c;
-    color:#e9e9ea;
-    font:16px/1.7 Georgia, serif;
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font:16px/1.7 Georgia, serif;
 }
 
 .wrap{
-    max-width:720px;
-    margin:0 auto;
-    padding:40px 20px 80px;
+  max-width:720px;
+  margin:0 auto;
+  padding:40px 20px 80px;
+}
+
+.header{
+  padding-bottom:18px;
+  border-bottom:1px solid var(--line);
+  margin-bottom:26px;
 }
 
 h1{
-    font-size:26px;
-    font-weight:600;
-    margin-bottom:8px;
+  font-size:26px;
+  font-weight:600;
+  margin:0 0 8px;
 }
 
 .sub{
-    color:#9a9aa0;
-    font-size:14px;
-    margin-bottom:40px;
+  margin:0;
+  color:var(--muted);
+  font-size:14px;
+}
+.sub a{
+  color:var(--muted);
+  text-decoration:none;
+  border-bottom:1px solid transparent;
+}
+.sub a:hover{
+  color:var(--fg);
+  border-bottom-color:var(--fg);
+}
+
+.list{
+  display:flex;
+  flex-direction:column;
+  gap:26px;
 }
 
 .post{
-    margin-bottom:48px;
-    padding-bottom:28px;
-    border-bottom:1px solid #232326;
+  padding-bottom:28px;
+  border-bottom:1px solid var(--line);
 }
 
 .num{
-    color:#9a9aa0;
-    margin-right:6px;
+  color:var(--muted);
+  margin-right:8px;
+  font-variant-numeric: tabular-nums;
 }
 
 .title{
-    font-size:20px;
-    font-weight:600;
+  font-size:20px;
+  font-weight:600;
 }
 
 .caption{
-    margin-top:14px;
-    white-space:pre-line;
+  margin-top:14px;
+  white-space:pre-line;
 }
 
 .listen{
-    margin-top:14px;
-    font-size:14px;
-    color:#9a9aa0;
+  margin-top:14px;
+  font-size:14px;
+  color:var(--muted);
 }
 
 .listen a{
-    color:#9a9aa0;
-    text-decoration:none;
-    border-bottom:1px solid transparent;
+  color:var(--muted);
+  text-decoration:none;
+  border-bottom:1px solid transparent;
 }
 
 .listen a:hover{
-    color:#ffffff;
-    border-bottom:1px solid #ffffff;
+  color:var(--fg);
+  border-bottom-color:var(--fg);
 }
 
-.divider{
-    margin:0 8px;
-}
+.divider{ margin:0 8px; }
+
+.muted{ color:var(--muted); }
