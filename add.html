@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>KOIFSH — Add Post</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* small additions just for the form */
+    .card{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      background:rgba(255,255,255,.01);
+    }
+    label{display:block; color:var(--muted); font-size:13px; margin:12px 0 6px;}
+    input, textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      background:transparent;
+      color:var(--fg);
+      font:16px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      outline:none;
+    }
+    textarea{min-height:160px; resize:vertical; white-space:pre-wrap;}
+    .row{display:grid; grid-template-columns:1fr; gap:12px;}
+    @media (min-width:720px){ .row{grid-template-columns:1fr 1fr;} }
+    .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
+    button{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:10px 14px;
+      background:transparent;
+      color:var(--fg);
+      cursor:pointer;
+      font:14px/1.2 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    button:hover{background:rgba(255,255,255,.03);}
+    .out{
+      margin-top:14px;
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.01);
+      font:13px/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .hint{color:var(--muted); font-size:12px; margin-top:10px}
+    .topbar{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap;}
+    .topbar a{color:var(--muted); border-bottom:1px solid transparent;}
+    .topbar a:hover{color:var(--fg); border-bottom-color:var(--fg);}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1 style="margin:0 0 8px;">Add Post</h1>
+      <div style="display:flex; gap:14px; flex-wrap:wrap;">
+        <a href="index.html">← Back to Archive</a>
+      </div>
+    </div>
+    <p class="sub">Fill it out → click <strong>Generate</strong> → click <strong>Copy</strong> → paste into <code>posts.json</code>.</p>
+
+    <div class="card">
+      <div class="row">
+        <div>
+          <label for="n">Number</label>
+          <input id="n" inputmode="numeric" placeholder="1" />
+        </div>
+        <div>
+          <label for="title">Song title</label>
+          <input id="title" placeholder="Everything Happens to Me" />
+        </div>
+      </div>
+
+      <label for="caption">Caption (full)</label>
+      <textarea id="caption" placeholder="Paste your IG caption here. Keep line breaks."></textarea>
+
+      <div class="row">
+        <div>
+          <label for="spotify">Spotify link (optional)</label>
+          <input id="spotify" placeholder="https://open.spotify.com/track/..." />
+        </div>
+        <div>
+          <label for="apple">Apple Music link (optional)</label>
+          <input id="apple" placeholder="https://music.apple.com/us/album/..." />
+        </div>
+      </div>
+
+      <div class="btns">
+        <button id="gen">Generate JSON block</button>
+        <button id="copy" disabled>Copy</button>
+        <button id="clear" type="button">Clear</button>
+      </div>
+
+      <div class="hint">
+        Tip: The form autosaves locally in your browser. If you refresh, your draft stays.
+      </div>
+
+      <pre class="out" id="out">JSON will appear here.</pre>
+    </div>
+  </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  const fields = ["n","title","caption","spotify","apple"];
+
+  // load draft
+  try{
+    const saved = JSON.parse(localStorage.getItem("koifsh_archive_draft") || "{}");
+    fields.forEach(k => { if(saved[k] !== undefined) $(k).value = saved[k]; });
+  }catch(e){}
+
+  // autosave
+  fields.forEach(k => {
+    $(k).addEventListener("input", () => {
+      const draft = {};
+      fields.forEach(x => draft[x] = $(x).value);
+      localStorage.setItem("koifsh_archive_draft", JSON.stringify(draft));
+    });
+  });
+
+  function cleanUrl(u){
+    u = (u || "").trim();
+    return u;
+  }
+
+  function toInt(s){
+    const n = parseInt(String(s).trim(), 10);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function buildBlock(){
+    const n = toInt($("n").value);
+    const title = $("title").value.trim();
+    const caption = $("caption").value.replace(/\r\n/g, "\n").trimEnd();
+    const spotify = cleanUrl($("spotify").value);
+    const apple = cleanUrl($("apple").value);
+
+    if(!n || !title){
+      return { error: "Add at least a Number and Song title." };
+    }
+
+    const obj = {
+      n,
+      title,
+      caption,
+      spotify,
+      apple
+    };
+
+    // remove empty optional fields so your JSON stays clean
+    if(!obj.caption) delete obj.caption;
+    if(!obj.spotify) delete obj.spotify;
+    if(!obj.apple) delete obj.apple;
+
+    // Pretty-printed object (NOT wrapped in an array)
+    const json = JSON.stringify(obj, null, 2);
+    return { json };
+  }
+
+  $("gen").addEventListener("click", (e) => {
+    e.preventDefault();
+    const { json, error } = buildBlock();
+    if(error){
+      $("out").textContent = error;
+      $("copy").disabled = true;
+      return;
+    }
+    $("out").textContent = json + ","; // comma so you can paste into posts.json array
+    $("copy").disabled = false;
+  });
+
+  $("copy").addEventListener("click", async () => {
+    try{
+      await navigator.clipboard.writeText($("out").textContent);
+      $("copy").textContent = "Copied";
+      setTimeout(()=> $("copy").textContent = "Copy", 900);
+    }catch(e){
+      alert("Copy failed — select the text and copy manually.");
+    }
+  });
+
+  $("clear").addEventListener("click", () => {
+    fields.forEach(k => $(k).value = "");
+    localStorage.removeItem("koifsh_archive_draft");
+    $("out").textContent = "JSON will appear here.";
+    $("copy").disabled = true;
+  });
+</script>
+</body>
+</html>
